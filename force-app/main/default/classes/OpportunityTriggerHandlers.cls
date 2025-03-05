@@ -21,7 +21,10 @@ public with sharing class OpportunityTriggerHandlers {
         for(Opportunity opp : opps){
             if(opportunityMapToAmount.containsKey(opp.Id)){
                 opp.Amount = opportunityMapToAmount.get(opp.Id);
-                opp.StageName = 'Closed Won';
+                if(opp.Amount > 15000){
+                    opp.StageName = 'Closed Won';
+                    emailNotification(opp.Id);
+                }
             }
         }
         if(!oppsToUpdate.isEmpty()){
@@ -29,8 +32,14 @@ public with sharing class OpportunityTriggerHandlers {
         }
     }
 
+    private static void emailNotification(Id oppId){
+        Opportunity opp = [SELECT Id, Owner.Email FROM Opportunity WHERE Id =: oppId];
 
-    private static void emailNotification(){
+        Messaging.SingleEmailMessage email = new Messaging.SingleEmailMessage();
+        email.setToAddresses(new String[]{opp.Owner.Email});
+        email.setSubject('Oportunidade Fechada com Sucesso!');
+        email.setPlainTextBody('A oportunidade ' + opp.Id + ' atingiu um valor de ' + opp.Amount + ' e foi marcada como "Fechado – Ganhou".');
 
+        Messaging.sendEmail(new Messaging.SingleEmailMessage[]{email});
     }
 }
