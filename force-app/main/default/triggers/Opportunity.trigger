@@ -1,5 +1,9 @@
-trigger Opportunity on SOBJECT (after insert, after update) {
+trigger Opportunity on Opportunity (after insert, after update) {
     if(Trigger.isInsert || Trigger.isUpdate){
-        OpportunityTriggerHandler(Trigger.newMap.keySet())
+        if(OpportunityTriggerAfterInsert.isAfterInsert){
+            return;
+        }
+        OpportunityTriggerAfterInsert.isAfterInsert = true;
+        OpportunityTriggerAfterInsert.OpportunityTriggerHandlers(Trigger.newMap.keySet());
     }
 }
