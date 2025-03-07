@@ -1,11 +1,9 @@
-public with sharing class OpportunityTriggerHandlers {
-    public static void opportunityTotalValueCalculator(Set<Id> oppId) {
+public with sharing class ProductTriggerHandlers {
+    public static void productTotalValueCalculator(Set<Id> prodId) {
+        Map<Id, Decimal> opportunityMapToAmount = new Map<Id, Decimal>();
 
-        Map<String, Decimal> opportunityMapToAmount = new Map<String, Decimal>();
+        List<Product__c> products  = [SELECT Id, Quantity__c, Price__c, Opportunity__c FROM Product__c WHERE Id =: prodId];
 
-        List<Product__c> products = [SELECT Id, Quantity__c, Price__c FROM Product__c WHERE Opportunity__c =: oppId];
-        
-        
         for(Product__c prod : products){
             if(!opportunityMapToAmount.containsKey(prod.Opportunity__c)){
                 opportunityMapToAmount.put(prod.Opportunity__c, prod.Quantity__c * prod.Price__c);
@@ -14,12 +12,11 @@ public with sharing class OpportunityTriggerHandlers {
                 opportunityMapToAmount.put(prod.Opportunity__c, (prod.Quantity__c * prod.Price__c) + opportunityMapToAmount.get(prod.Opportunity__c));
             }
         }
-
         List<Opportunity> opps = [SELECT Id, Amount FROM Opportunity WHERE Id IN: opportunityMapToAmount.keySet()];
 
         for(Opportunity opp : opps){
             if(opportunityMapToAmount.containsKey(opp.Id)){
-                opp.Amount = opportunityMapToAmount.get(opp.Id);
+                opp.Amount = opp.Amount + opportunityMapToAmount.get(opp.Id);
                 if(opp.Amount > 15000){
                     opp.StageName = 'Closed Won';
                     emailNotification(opp.Id);
@@ -32,7 +29,7 @@ public with sharing class OpportunityTriggerHandlers {
     }
 
     private static void emailNotification(Id oppId){
-        Opportunity opp = [SELECT Id, Owner.Email FROM Opportunity WHERE Id =: oppId];
+        Opportunity opp = [SELECT Id, Owner.Email, Amount FROM Opportunity WHERE Id =: oppId];
 
         Messaging.SingleEmailMessage email = new Messaging.SingleEmailMessage();
         email.setToAddresses(new String[]{opp.Owner.Email});

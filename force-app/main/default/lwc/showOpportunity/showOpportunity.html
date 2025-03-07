@@ -1,3 +1,36 @@
 <template>
-    
+    <lightning-card title="Opportunities" icon-name="standard:opportunity">
+        <lightning-record-edit-form
+            object-api-name="Product__c"
+            onsubmit={handleSubmit}
+            onsuccess={handleSuccess}>
+
+            <div class="slds-p-around_medium">
+                <lightning-input-field field-name="Opportunity__c"></lightning-input-field>
+                <lightning-input-field field-name="Name" required></lightning-input-field>
+                
+                <div class="slds-grid slds-gutters">
+                    <div class="slds-col slds-size_1-of-2">
+                        <lightning-input-field field-name="Quantity__c" required></lightning-input-field>
+                    </div>
+                    <div class="slds-col slds-size_1-of-2">
+                        <lightning-input-field field-name="Price__c" required></lightning-input-field>
+                    </div>
+                </div>
+            </div>
+
+            <div class="slds-p-around_medium">
+                <lightning-button 
+                    label="Adicionar Produto" 
+                    variant="brand"
+                    type="submit">
+                </lightning-button>
+            </div>
+
+            <div class="exampleHolder">
+                <lightning-spinner alternative-text="Loading" size="medium" if:true={spinner}></lightning-spinner>
+            </div>
+
+        </lightning-record-edit-form>
+    </lightning-card>
 </template>
