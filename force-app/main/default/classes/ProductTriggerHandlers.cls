@@ -19,7 +19,7 @@ public with sharing class ProductTriggerHandlers {
                 opp.Amount = opp.Amount + opportunityMapToAmount.get(opp.Id);
                 if(opp.Amount > 15000){
                     opp.StageName = 'Closed Won';
-                    emailNotification(opp.Id);
+                    emailNotification(opp.Id); 
                 }
             }
         }
