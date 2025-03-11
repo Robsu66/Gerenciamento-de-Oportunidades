@@ -16,7 +16,13 @@ public with sharing class ProductTriggerHandlers {
 
         for(Opportunity opp : opps){
             if(opportunityMapToAmount.containsKey(opp.Id)){
-                opp.Amount = opp.Amount + opportunityMapToAmount.get(opp.Id);
+                if(opp.Amount != null){
+                    opp.Amount = opp.Amount + opportunityMapToAmount.get(opp.Id);
+                }
+                else{
+                    opp.Amount = opportunityMapToAmount.get(opp.Id);
+                }
+
                 if(opp.Amount > 15000){
                     opp.StageName = 'Closed Won';
                     emailNotification(opp.Id); 

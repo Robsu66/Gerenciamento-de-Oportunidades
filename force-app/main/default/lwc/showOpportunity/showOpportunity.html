@@ -1,15 +1,33 @@
 <template>
     <lightning-card title="Opportunities" icon-name="standard:opportunity">
         <lightning-accordion>
-            <template for:each={allData} for:item="opp">
+            <template for:each={opportunitiesWithProducts} for:item="opp">
                 <lightning-accordion-section key={opp.Id} name={opp.Name} label={opp.Name}>
-                    <template for:each={allProducts} for:item="prod">
-                        <lightning-accordion-section key={prod.Id} name={prod.Name} label={prod.Name}>
-
-                        </lightning-accordion-section>
+                    <template if:true={opp.products.length}>
+                        <template for:each={opp.products} for:item="prod">
+                            <div key={prod.Id} class="slds-p-around_small">
+                                <div class="slds-grid slds-gutters">
+                                    <div class="slds-col">
+                                        <p><strong>Name:</strong> {prod.Name}</p>
+                                    </div>
+                                    <div class="slds-col">
+                                        <p><strong>Price:</strong> {prod.UnitPrice}</p>
+                                    </div>
+                                    <div class="slds-col">
+                                        <p><strong>Quantity:</strong> {prod.Quantity}</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </template>
+                    </template>
+                    <template if:false={opp.products.length}>
+                        <div class="slds-p-around_small">
+                            <p>No products found for this opportunity.</p>
+                        </div>
                     </template>
                 </lightning-accordion-section>
             </template>
         </lightning-accordion>
     </lightning-card>
 </template>
+
