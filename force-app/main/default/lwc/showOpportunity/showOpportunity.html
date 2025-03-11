@@ -3,28 +3,60 @@
         <lightning-accordion>
             <template for:each={opportunitiesWithProducts} for:item="opp">
                 <lightning-accordion-section key={opp.Id} name={opp.Name} label={opp.Name}>
-                    <template if:true={opp.products.length}>
-                        <template for:each={opp.products} for:item="prod">
-                            <div key={prod.Id} class="slds-p-around_small">
-                                <div class="slds-grid slds-gutters">
-                                    <div class="slds-col">
-                                        <p><strong>Name:</strong> {prod.Name}</p>
-                                    </div>
-                                    <div class="slds-col">
-                                        <p><strong>Price:</strong> {prod.UnitPrice}</p>
-                                    </div>
-                                    <div class="slds-col">
-                                        <p><strong>Quantity:</strong> {prod.Quantity}</p>
-                                    </div>
-                                </div>
-                            </div>
+                    <div class="slds-p-around_small">
+                        <table class="slds-table slds-table_bordered slds-table_cell-buffer">
+                            <thead>
+                                <tr class="slds-text-title_caps">
+                                    <th scope="col">Field</th>
+                                    <th scope="col">Value</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <th scope="row">Opportunity Name</th>
+                                    <td>{opp.Name}</td>
+                                </tr>
+                                <tr>
+                                    <th scope="row">Amount</th>
+                                    <td>R$ {opp.Amount}</td>
+                                </tr>
+                                <tr>
+                                    <th scope="row">Close Date</th>
+                                    <td>{opp.CloseDate}</td>
+                                </tr>
+                                <tr>
+                                    <th scope="row">Stage</th>
+                                    <td>{opp.StageName}</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                    <div class="slds-p-around_small">
+                        <h3 class="slds-text-heading_small slds-p-bottom_small">Related Products</h3>
+                        <template if:true={opp.products.length}>
+                            <table class="slds-table slds-table_bordered slds-table_cell-buffer">
+                                <thead>
+                                    <tr class="slds-text-title_caps">
+                                        <th scope="col">Name</th>
+                                        <th scope="col">Price</th>
+                                        <th scope="col">Quantity</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <template for:each={opp.products} for:item="prod">
+                                        <tr key={prod.Id}>
+                                            <td>{prod.Name}</td>
+                                            <td>R$ {prod.Price__c}</td>
+                                            <td>{prod.Quantity__c}</td>
+                                        </tr>
+                                    </template>
+                                </tbody>
+                            </table>
                         </template>
-                    </template>
-                    <template if:false={opp.products.length}>
-                        <div class="slds-p-around_small">
+                        <template if:false={opp.products.length}>
                             <p>No products found for this opportunity.</p>
-                        </div>
-                    </template>
+                        </template>
+                    </div>
                 </lightning-accordion-section>
             </template>
         </lightning-accordion>

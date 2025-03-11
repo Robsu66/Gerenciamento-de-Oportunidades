@@ -44,7 +44,6 @@ export default class OpportunityForm extends LightningElement {
         }
       }
 
-      // Create a new array with opportunities and their products
       this.opportunitiesWithProducts = this.allData.map((opp) => {
         return {
           ...opp,
@@ -52,8 +51,6 @@ export default class OpportunityForm extends LightningElement {
         }
       })
 
-      const arrayOfEntries = Array.from(this.productsMap.entries())
-      console.log("" + arrayOfEntries)
     } catch (error) {
       console.error("Error fetching products:", error)
     }

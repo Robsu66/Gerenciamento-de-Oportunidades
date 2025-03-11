@@ -1,7 +1,7 @@
 public with sharing class showOpportunityController {
     @AuraEnabled(cacheable = true)
     public static List<Opportunity> getOpportunities() {
-        return [SELECT Name, Amount, StageName FROM Opportunity];
+        return [SELECT Name, Amount, StageName, CloseDate FROM Opportunity];
     }
 
     @AuraEnabled(cacheable = true)
