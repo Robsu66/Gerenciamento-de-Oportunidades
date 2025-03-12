@@ -2,7 +2,7 @@ import { LightningElement, wire, track } from "lwc"
 import getOpportunities from "@salesforce/apex/showOpportunityController.getOpportunities"
 import getProducts from "@salesforce/apex/showOpportunityController.getProducts"
 
-export default class OpportunityForm extends LightningElement {
+export default class showOpportunity extends LightningElement {
   @track allData = []
   @track opportunitiesWithProducts = []
   allProducts = []
@@ -14,8 +14,6 @@ export default class OpportunityForm extends LightningElement {
     this.showChild = false;
   }
 
-
-  
   onClick() {
     console.log('entrei');
     this.showChild = true;
@@ -25,8 +23,6 @@ export default class OpportunityForm extends LightningElement {
         composed: true
     }));
   }
-
-
 
   @wire(getOpportunities)
   wireData({ error, data }) {
@@ -74,4 +70,3 @@ export default class OpportunityForm extends LightningElement {
     }
   }
 }
-
