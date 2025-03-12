@@ -3,11 +3,30 @@ import getOpportunities from "@salesforce/apex/showOpportunityController.getOppo
 import getProducts from "@salesforce/apex/showOpportunityController.getProducts"
 
 export default class OpportunityForm extends LightningElement {
-  spinner = false
   @track allData = []
   @track opportunitiesWithProducts = []
   allProducts = []
   productsMap = new Map()
+  showChild;
+  
+  constructor(){
+    super();
+    this.showChild = false;
+  }
+
+
+  
+  onClick() {
+    console.log('entrei');
+    this.showChild = true;
+    this.dispatchEvent(new CustomEvent('productmanager',{
+        detail: {showChild: this.showChild},
+        bubbles: true,
+        composed: true
+    }));
+  }
+
+
 
   @wire(getOpportunities)
   wireData({ error, data }) {
@@ -28,7 +47,6 @@ export default class OpportunityForm extends LightningElement {
   async fetchProducts(opportunityIds) {
     try {
       this.allProducts = await getProducts({ opportunityIds: opportunityIds })
-      console.log(opportunityIds)
 
       this.productsMap.clear()
 

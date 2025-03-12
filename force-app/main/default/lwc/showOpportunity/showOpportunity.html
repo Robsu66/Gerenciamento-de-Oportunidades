@@ -1,5 +1,8 @@
 <template>
     <lightning-card title="Opportunities" icon-name="standard:opportunity">
+        <div class="slds-text-align_right slds-m-right_medium">
+            <lightning-button onclick={onClick} label="Create new Product"></lightning-button>
+        </div>
         <lightning-accordion>
             <template for:each={opportunitiesWithProducts} for:item="opp">
                 <lightning-accordion-section key={opp.Id} name={opp.Name} label={opp.Name}>
