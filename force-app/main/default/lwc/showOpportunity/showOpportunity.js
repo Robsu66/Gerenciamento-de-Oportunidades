@@ -1,31 +1,59 @@
 import { LightningElement, wire, track } from "lwc"
+import { refreshApex } from "@salesforce/apex"
 import getOpportunities from "@salesforce/apex/showOpportunityController.getOpportunities"
 import getProducts from "@salesforce/apex/showOpportunityController.getProducts"
 
-export default class showOpportunity extends LightningElement {
-  @track allData = []
-  @track opportunitiesWithProducts = []
-  allProducts = []
+export default class ShowOpportunity extends LightningElement {
+  allData = []
+  opportunitiesWithProducts = []
   productsMap = new Map()
-  showChild;
-  
-  constructor(){
-    super();
-    this.showChild = false;
+  showChild
+  wiredOpportunitiesResult
+  allProducts
+
+  constructor() {
+    super()
+    this.showChild = false
+    this.refresh = this.refresh.bind(this)
+  }
+
+  connectedCallback() {
+    window.addEventListener("refresh", this.refresh)
+  }
+
+  refresh() {
+    if (this.wiredOpportunitiesResult) {
+      return refreshApex(this.wiredOpportunitiesResult)
+        .then(() => {
+          console.log("Atualizado")
+        })
+        .catch((error) => {
+          console.error("Erro ao atualizar: ", error)
+        })
+    }
+  }
+
+  disconnectedCallback() {
+    window.removeEventListener("refresh", this.refresh)
   }
 
   onClick() {
-    console.log('entrei');
-    this.showChild = true;
-    this.dispatchEvent(new CustomEvent('productmanager',{
-        detail: {showChild: this.showChild},
+    this.showChild = true
+
+    this.dispatchEvent(
+      new CustomEvent("productmanager", {
+        detail: { showChild: this.showChild },
         bubbles: true,
-        composed: true
-    }));
+        composed: true,
+      }),
+    )
   }
 
   @wire(getOpportunities)
-  wireData({ error, data }) {
+  wireData(result) {
+    this.wiredOpportunitiesResult = result
+    const { error, data } = result
+
     if (data) {
       this.allData = data
       const opportunityIds = []
@@ -36,7 +64,7 @@ export default class showOpportunity extends LightningElement {
 
       this.fetchProducts(opportunityIds)
     } else if (error) {
-      console.error("Error fetching opportunities:", error)
+      console.error("Error fetching opportunities: ", error)
     }
   }
 
@@ -64,9 +92,8 @@ export default class showOpportunity extends LightningElement {
           products: this.productsMap.get(opp.Id) || [],
         }
       })
-
     } catch (error) {
-      console.error("Error fetching products:", error)
+      console.error("Error fetching products: ", error)
     }
   }
 }

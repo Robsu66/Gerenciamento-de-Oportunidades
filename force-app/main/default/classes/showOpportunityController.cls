@@ -4,7 +4,7 @@ public with sharing class showOpportunityController {
         return [SELECT Name, Amount, StageName, CloseDate FROM Opportunity];
     }
 
-    @AuraEnabled(cacheable = true)
+    @AuraEnabled(cacheable = false)
     public static List<Product__c> getProducts(List<Id> opportunityIds) {
         return [SELECT Id, Name, Quantity__c, Price__c, Opportunity__c 
                 FROM Product__c WHERE Opportunity__c IN :opportunityIds];

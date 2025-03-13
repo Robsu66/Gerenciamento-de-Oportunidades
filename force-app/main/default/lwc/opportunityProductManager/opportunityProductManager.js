@@ -3,7 +3,7 @@ import { ShowToastEvent } from "lightning/platformShowToastEvent"
 import { NavigationMixin } from "lightning/navigation"
 
 export default class OpportunityProductManager extends NavigationMixin(LightningElement) {
-  spinner = false
+  spinner = false;
   showChild = false;
   
   connectedCallback(){
@@ -11,9 +11,7 @@ export default class OpportunityProductManager extends NavigationMixin(Lightning
   }
 
   handleProductManager = (event) =>{
-    console.log(this.showChild);
     this.showChild = event.detail.showChild;
-    console.log(this.showChild)
   }
 
   disconnectedCallback(){
@@ -25,6 +23,11 @@ export default class OpportunityProductManager extends NavigationMixin(Lightning
   }
 
   handleSuccess(){
+    this.dispatchEvent(new CustomEvent('refresh',{
+        detail: {  },
+        bubbles: true,
+        composed: true}));
+
     const toastEvent = new ShowToastEvent({
             title: 'Registro Criado',
             message: 'Seu registro foi criado com sucesso',
