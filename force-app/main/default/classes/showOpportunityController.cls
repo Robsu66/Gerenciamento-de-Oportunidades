@@ -1,12 +1,14 @@
 public with sharing class showOpportunityController {
+    
     @AuraEnabled(cacheable = true)
     public static List<Opportunity> getOpportunities() {
-        return [SELECT Name, Amount, StageName, CloseDate FROM Opportunity];
+        return [SELECT id, Name, Amount, StageName, CloseDate, (SELECT id, Name, Quantity__c, Price__c FROM Products__r) 
+                FROM Opportunity];
     }
 
-    @AuraEnabled(cacheable = false)
-    public static List<Product__c> getProducts(List<Id> opportunityIds) {
-        return [SELECT Id, Name, Quantity__c, Price__c, Opportunity__c 
-                FROM Product__c WHERE Opportunity__c IN :opportunityIds];
-    }
+    // @AuraEnabled(cacheable = true)
+    // public static List<Product__c> getProducts(List<Id> opportunityIds) {
+    //     return [SELECT Id, Name, Quantity__c, Price__c, Opportunity__c 
+    //             FROM Product__c WHERE Opportunity__c IN :opportunityIds];
+    // }
 }

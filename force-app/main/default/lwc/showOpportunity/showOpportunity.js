@@ -1,99 +1,104 @@
-import { LightningElement, wire, track } from "lwc"
-import { refreshApex } from "@salesforce/apex"
-import getOpportunities from "@salesforce/apex/showOpportunityController.getOpportunities"
-import getProducts from "@salesforce/apex/showOpportunityController.getProducts"
+import { LightningElement, wire, track } from "lwc";
+import { refreshApex } from "@salesforce/apex";
+import getOpportunities from "@salesforce/apex/showOpportunityController.getOpportunities";
 
 export default class ShowOpportunity extends LightningElement {
-  allData = []
-  opportunitiesWithProducts = []
-  productsMap = new Map()
-  showChild
-  wiredOpportunitiesResult
-  allProducts
+    @track allData = [];
+    @track filteredData = [];
+    wiredOpportunitiesResult;
 
-  constructor() {
-    super()
-    this.showChild = false
-    this.refresh = this.refresh.bind(this)
-  }
+    searchName;
+    startDate;
+    endDate;
+    searchStage;
 
-  connectedCallback() {
-    window.addEventListener("refresh", this.refresh)
-  }
-
-  refresh() {
-    if (this.wiredOpportunitiesResult) {
-      return refreshApex(this.wiredOpportunitiesResult)
-        .then(() => {
-          console.log("Atualizado")
-        })
-        .catch((error) => {
-          console.error("Erro ao atualizar: ", error)
-        })
+    constructor(){
+      super()
+      this.searchName = '';
+      this.startDate = '';
+      this.endDate = '';
+      this.searchStage = '';
     }
-  }
 
-  disconnectedCallback() {
-    window.removeEventListener("refresh", this.refresh)
-  }
+    stageOptions = [
+        { label: 'All', value: '' },
+        { label: 'Prospecting', value: 'Prospecting' },
+        { label: 'Qualification', value: 'Qualification' },
+        { label: 'Need Analysis', value: 'Need Analysis' },
+        { label: 'Value Proposition', value: 'Value Proposition' },
+        { label: 'Id. Decision Makers', value: 'Id. Decision Makers' },
+        { label: 'Perception Analysis', value: 'Perception Analysis' },
+        { label: 'Proposal', value: 'Proposal' },
+        { label: 'Negotiation', value: 'Negotiation' },
+        { label: 'Approved', value: 'Approved' },
+        { label: 'Closed Won', value: 'Closed Won' },
+        { label: 'Closed Lost', value: 'Closed Lost' }
+    ];
 
-  onClick() {
-    this.showChild = true
-
-    this.dispatchEvent(
-      new CustomEvent("productmanager", {
-        detail: { showChild: this.showChild },
-        bubbles: true,
-        composed: true,
-      }),
-    )
-  }
-
-  @wire(getOpportunities)
-  wireData(result) {
-    this.wiredOpportunitiesResult = result
-    const { error, data } = result
-
-    if (data) {
-      this.allData = data
-      const opportunityIds = []
-
-      Object.values(this.allData).forEach((opportunity) => {
-        opportunityIds.push(opportunity.Id)
-      })
-
-      this.fetchProducts(opportunityIds)
-    } else if (error) {
-      console.error("Error fetching opportunities: ", error)
+    connectedCallback() {
+        window.addEventListener("refresh", this.refresh);
     }
-  }
 
-  async fetchProducts(opportunityIds) {
-    try {
-      this.allProducts = await getProducts({ opportunityIds: opportunityIds })
+    disconnectedCallback() {
+        window.removeEventListener("refresh", this.refresh);
+    }
 
-      this.productsMap.clear()
-
-      for (let i = 0; i < this.allProducts.length; i++) {
-        const opportunityId = this.allProducts[i].Opportunity__c
-        const product = this.allProducts[i]
-
-        if (opportunityId) {
-          if (!this.productsMap.has(opportunityId)) {
-            this.productsMap.set(opportunityId, [])
-          }
-          this.productsMap.get(opportunityId).push(product)
+    refresh() {
+        if (this.wiredOpportunitiesResult) {
+            return refreshApex(this.wiredOpportunitiesResult)
+                .then(() => console.log("Atualizado"))
+                .catch((error) => console.error("Erro ao atualizar: ", error));
         }
-      }
-
-      this.opportunitiesWithProducts = this.allData.map((opp) => {
-        return {
-          ...opp,
-          products: this.productsMap.get(opp.Id) || [],
-        }
-      })
-    } catch (error) {
-      console.error("Error fetching products: ", error)
     }
-  }
+
+    @wire(getOpportunities)
+    wireData(result) {
+        this.wiredOpportunitiesResult = result;
+        const { error, data } = result;
+
+        if (data) {
+            this.allData = data.map(opp => ({
+                ...opp,
+                Products__r: opp.Products__r || []
+            }));
+            this.applyFilters();
+        } else if (error) {
+            console.error("Error fetching opportunities: ", error);
+        }
+    }
+
+    handleSearchName(event) {
+        this.searchName = event.target.value.toLowerCase();
+        this.applyFilters();
+    }
+
+    handleStartDate(event) {
+        this.startDate = event.target.value;
+        this.applyFilters();
+    }
+
+    handleEndDate(event) {
+        this.endDate = event.target.value;
+        this.applyFilters();
+    }
+
+    handleSearchStage(event) {
+        this.searchStage = event.target.value;
+        this.applyFilters();
+    }
+
+    applyFilters() {
+        this.filteredData = this.allData.filter(opp => {
+            let matchesName = this.searchName ? opp.Name.toLowerCase().includes(this.searchName) : true;
+            let matchesStartDate = this.startDate ? new Date(opp.CloseDate) >= new Date(this.startDate) : true;
+            let matchesEndDate = this.endDate ? new Date(opp.CloseDate) <= new Date(this.endDate) : true;
+            let matchesStage = this.searchStage ? opp.StageName === this.searchStage : true;
+
+            return matchesName && matchesStartDate && matchesEndDate && matchesStage;
+        });
+    }
+
+    onClick() {
+        this.dispatchEvent(new CustomEvent("productmanager", { bubbles: true, composed: true }));
+    }
 }
