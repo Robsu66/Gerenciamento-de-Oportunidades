@@ -35,13 +35,14 @@ public with sharing class ProductTriggerHandlers {
     }
 
     private static void emailNotification(Id oppId){
-        Opportunity opp = [SELECT Id, Owner.Email, Amount FROM Opportunity WHERE Id =: oppId];
+        List<Opportunity> opp = new List<Opportunity> ([SELECT Id, Owner.Email, Amount FROM Opportunity WHERE Id =: oppId]);
+        if(!opp.isEmpty()){
+            Messaging.SingleEmailMessage email = new Messaging.SingleEmailMessage();
+            email.setToAddresses(new String[]{opp.Owner.Email});
+            email.setSubject('Oportunidade' + opp.Name + 'Fechada com Sucesso!');
+            email.setPlainTextBody('A oportunidade ' + opp.Name + ' atingiu um valor de ' + opp.Amount + ' e foi marcada como "Fechado – Ganhou".');
 
-        Messaging.SingleEmailMessage email = new Messaging.SingleEmailMessage();
-        email.setToAddresses(new String[]{opp.Owner.Email});
-        email.setSubject('Oportunidade Fechada com Sucesso!');
-        email.setPlainTextBody('A oportunidade ' + opp.Id + ' atingiu um valor de ' + opp.Amount + ' e foi marcada como "Fechado – Ganhou".');
-
-        Messaging.sendEmail(new Messaging.SingleEmailMessage[]{email});
+            Messaging.sendEmail(new Messaging.SingleEmailMessage[]{email});
+        }
     }
 }
