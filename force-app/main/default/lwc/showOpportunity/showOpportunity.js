@@ -5,6 +5,7 @@ import getOpportunities from "@salesforce/apex/showOpportunityController.getOppo
 export default class ShowOpportunity extends LightningElement {
     @track allData = [];
     @track filteredData = [];
+    showChild;
     wiredOpportunitiesResult;
 
     searchName;
@@ -14,10 +15,12 @@ export default class ShowOpportunity extends LightningElement {
 
     constructor(){
       super()
+      this.showChild = false;
       this.searchName = '';
       this.startDate = '';
       this.endDate = '';
       this.searchStage = '';
+      this.refresh = this.refresh.bind(this);
     }
 
     stageOptions = [
@@ -99,6 +102,11 @@ export default class ShowOpportunity extends LightningElement {
     }
 
     onClick() {
-        this.dispatchEvent(new CustomEvent("productmanager", { bubbles: true, composed: true }));
+      this.showChild = true;
+      this.dispatchEvent
+        (new CustomEvent("productmanager", {
+          detail: { showChild: this.showChild },
+          bubbles: true, 
+          composed: true }));
     }
 }
