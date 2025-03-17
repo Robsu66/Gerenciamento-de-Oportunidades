@@ -16,6 +16,7 @@ export default class ShowOpportunity extends LightningElement {
   @track currentPage;
   pageSize;
   hasMoreRecords = true;
+  tempData = [];
 
   constructor() {
     super();
@@ -68,9 +69,17 @@ export default class ShowOpportunity extends LightningElement {
     const { error, data } = result;
 
     if (data) {
-      this.hasMoreRecords = data.length === this.pageSize;
+      this.hasMoreRecords = data.length > this.pageSize;
 
-      this.allData = data.map((opp) => ({
+      if(this.hasMoreRecords){
+        this.tempData = [...data];
+        this.tempData.pop();
+      }
+      else{
+        this.tempData = [...data];
+      }
+
+      this.allData = this.tempData.map((opp) => ({
         ...opp,
         Products__r: opp.Products__r || [],
       }));
