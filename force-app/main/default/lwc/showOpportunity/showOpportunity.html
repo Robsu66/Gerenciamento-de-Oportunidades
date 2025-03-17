@@ -82,9 +82,10 @@
             </template>
         </lightning-accordion>
         <div class="slds-text-align_center">
-            <lightning-button icon-name='utility:chevronleft' onclick={handlePreviousPage} disabled={isPreviousDisabled}></lightning-button>
+            <lightning-button disable-animation icon-name="utility:chevronleft" variant="base" onclick={handlePreviousPage} disabled={isPreviousDisabled}></lightning-button>
             <span class="slds-m-horizontal_medium"> Page {currentPage} </span>
-            <lightning-button icon-name='utility:chevronright' onclick={handleNextPage} disabled={isNextDisabled}></lightning-button>
+            <lightning-button disable-animation icon-name="utility:chevronright" variant="base" onclick={handleNextPage} disabled={isNextDisabled}></lightning-button>
         </div>
+        
     </lightning-card>
 </template>
