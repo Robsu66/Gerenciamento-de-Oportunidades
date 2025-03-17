@@ -2,7 +2,7 @@
 private class showOpportunityControllerTest {
     
     @TestSetup
-    static void makeData(){
+    static void makeData() {
         Opportunity opp = new Opportunity(
             Name = 'Test',
             StageName = 'Prospecting',
@@ -22,30 +22,20 @@ private class showOpportunityControllerTest {
     
     @isTest
     static void getOpportunitiesTest() {
-        
         Test.startTest();
-        List<Opportunity> result = new List<Opportunity> (showOpportunityController.getOpportunities());
+        List<Opportunity> result = showOpportunityController.getOpportunities();
         Test.stopTest();
         
         System.assertNotEquals(null, result, 'not null');
+        System.assertEquals(1, result.size(), 'Deve ser igual');
         System.assertEquals('Test', result[0].Name, 'Deve ser igual');
         System.assertEquals('Prospecting', result[0].StageName, 'Deve ser igual');
         System.assertEquals(Date.today(), result[0].CloseDate, 'Deve ser igual');
-    }
-    
-    @isTest
-    static void getProductsTest() {
-        List<Opportunity> testOpp = new List<Opportunity> ([SELECT Id FROM Opportunity LIMIT 1]);
-        List<Id> testOppId = new List<Id>{testOpp[0].Id};
         
-        Test.startTest();
-        List<Product__c> result = new List <Product__c> (showOpportunityController.getProducts(testOppId));
-        Test.stopTest();
-        
-        System.assertNotEquals(null, result, 'not null');
-        System.assertEquals('Test', result[0].Name, 'Deve ser igual');
-        System.assertEquals(2, result[0].Quantity__c, 'Deve ser igual');
-        System.assertEquals(500, result[0].Price__c, 'Deve ser igual');
-        System.assertEquals(testOpp[0].Id, result[0].Opportunity__c, 'Deve ser igual');
+        System.assertNotEquals(null, result[0].Products__r, 'not null');
+        System.assertEquals(1, result[0].Products__r.size(), 'Deve ser igual');
+        System.assertEquals('Test', result[0].Products__r[0].Name, 'Deve ser igual');
+        System.assertEquals(2, result[0].Products__r[0].Quantity__c, 'Deve ser igual');
+        System.assertEquals(500, result[0].Products__r[0].Price__c, 'Deve ser igual');
     }
 }

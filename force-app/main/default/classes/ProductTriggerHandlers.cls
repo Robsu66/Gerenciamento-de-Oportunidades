@@ -39,7 +39,6 @@ public with sharing class ProductTriggerHandlers {
         
         if (!oppList.isEmpty()) {
             Opportunity opp = oppList[0];
-
             if (opp.Owner.Email != null) {
                 Messaging.SingleEmailMessage email = new Messaging.SingleEmailMessage();
                 email.setToAddresses(new String[]{opp.Owner.Email});
