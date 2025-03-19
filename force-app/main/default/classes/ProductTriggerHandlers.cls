@@ -1,35 +1,67 @@
 public with sharing class ProductTriggerHandlers {
-    public static void productTotalValueCalculator(Set<Id> prodId) {
-        Map<Id, Decimal> opportunityMapToAmount = new Map<Id, Decimal>();
-
-        List<Product__c> products  = [SELECT Id, Quantity__c, Price__c, Opportunity__c FROM Product__c WHERE Id =: prodId];
-
-        for(Product__c prod : products){
-            if(!opportunityMapToAmount.containsKey(prod.Opportunity__c)){
-                opportunityMapToAmount.put(prod.Opportunity__c, prod.Quantity__c * prod.Price__c);
+    public static void productTotalValueCalculator(Set<Id> prodIds, Map<Id, Product__c> oldMap) {
+        Map<Id, Decimal> opportunityMapToAmountDifference = new Map<Id, Decimal>();
+        List<Product__c> newProducts = [SELECT Id, Quantity__c, Price__c, Opportunity__c FROM Product__c 
+                                        WHERE Id IN :prodIds];
+        
+        for(Product__c newProd : newProducts) {
+            if(newProd.Opportunity__c == null) {
+                continue;
             }
-            else{
-                opportunityMapToAmount.put(prod.Opportunity__c, (prod.Quantity__c * prod.Price__c) + opportunityMapToAmount.get(prod.Opportunity__c));
+            Decimal valueDifference = 0;
+            
+            if(oldMap == null || !oldMap.containsKey(newProd.Id)) {
+                valueDifference = newProd.Quantity__c * newProd.Price__c;
+            } 
+            else {
+                Product__c oldProd = oldMap.get(newProd.Id);
+                
+                if(newProd.Quantity__c != oldProd.Quantity__c) {
+                    Decimal quantityDifference = newProd.Quantity__c - oldProd.Quantity__c;
+                    valueDifference = quantityDifference * newProd.Price__c;
+                }
+                if(newProd.Price__c != oldProd.Price__c) {
+                    valueDifference = valueDifference + (newProd.Price__c - oldProd.Price__c) * newProd.Quantity__c;
+                }
+            }
+            
+            if(valueDifference != 0) {
+                if(!opportunityMapToAmountDifference.containsKey(newProd.Opportunity__c)) {
+                    opportunityMapToAmountDifference.put(newProd.Opportunity__c, valueDifference);
+                }
+                else {
+                    opportunityMapToAmountDifference.put(
+                        newProd.Opportunity__c, 
+                        valueDifference + opportunityMapToAmountDifference.get(newProd.Opportunity__c)
+                    );
+                }
             }
         }
-        List<Opportunity> opps = [SELECT Id, Amount FROM Opportunity WHERE Id IN: opportunityMapToAmount.keySet()];
+        
+        if(opportunityMapToAmountDifference.isEmpty()) {
+            return;
+        }
+        
+        List<Opportunity> opps = [SELECT Id, Amount, StageName FROM Opportunity 
+                                  WHERE Id IN :opportunityMapToAmountDifference.keySet()];
 
-        for(Opportunity opp : opps){
-            if(opportunityMapToAmount.containsKey(opp.Id)){
-                if(opp.Amount != null){
-                    opp.Amount = opp.Amount + opportunityMapToAmount.get(opp.Id);
+        for(Opportunity opp : opps) {
+            if(opportunityMapToAmountDifference.containsKey(opp.Id)) {
+                if(opp.Amount != null) {
+                    opp.Amount = opp.Amount + opportunityMapToAmountDifference.get(opp.Id);
                 }
-                else{
-                    opp.Amount = opportunityMapToAmount.get(opp.Id);
+                else {
+                    opp.Amount = opportunityMapToAmountDifference.get(opp.Id);
                 }
 
-                if(opp.Amount > 15000){
+                if(opp.Amount > 15000 && opp.StageName != 'Closed Won') {
                     opp.StageName = 'Closed Won';
                     emailNotification(opp.Id); 
                 }
             }
         }
-        if(!opps.isEmpty()){
+        
+        if(!opps.isEmpty()) {
             update opps;
         }
     }
