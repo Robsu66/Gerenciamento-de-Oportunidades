@@ -1,6 +1,7 @@
 public with sharing class ProductTriggerHandlers {
     public static void productTotalValueCalculator(Set<Id> prodIds, Map<Id, Product__c> oldMap) {
         Map<Id, Decimal> opportunityMapToAmountDifference = new Map<Id, Decimal>();
+        List<Id> emailIdList = new List<Id>();
         List<Product__c> newProducts = [SELECT Id, Quantity__c, Price__c, Opportunity__c FROM Product__c 
                                         WHERE Id IN :prodIds];
         
@@ -41,7 +42,6 @@ public with sharing class ProductTriggerHandlers {
         if(opportunityMapToAmountDifference.isEmpty()) {
             return;
         }
-        
         List<Opportunity> opps = [SELECT Id, Amount, StageName FROM Opportunity 
                                   WHERE Id IN :opportunityMapToAmountDifference.keySet()];
 
@@ -53,33 +53,37 @@ public with sharing class ProductTriggerHandlers {
                 else {
                     opp.Amount = opportunityMapToAmountDifference.get(opp.Id);
                 }
-
                 if(opp.Amount > 15000 && opp.StageName != 'Closed Won') {
                     opp.StageName = 'Closed Won';
-                    emailNotification(opp.Id); 
+                    emailIdList.add(opp.Id);
                 }
             }
         }
         
+        emailNotification(emailIdList);
         if(!opps.isEmpty()) {
             update opps;
         }
     }
 
-    private static void emailNotification(Id oppId) {
-        List<Opportunity> oppList = [SELECT Id, Name, Amount, Owner.Email FROM Opportunity WHERE Id = :oppId];
-        
-        if (!oppList.isEmpty()) {
-            Opportunity opp = oppList[0];
-            if (opp.Owner.Email != null) {
-                Messaging.SingleEmailMessage email = new Messaging.SingleEmailMessage();
-                email.setToAddresses(new String[]{opp.Owner.Email});
-                email.setSubject('Oportunidade ' + opp.Name + ' Fechada com Sucesso!');
-                email.setPlainTextBody('A oportunidade "' + opp.Name + '" atingiu um valor de ' + opp.Amount + 
-                                       ' e foi marcada como "Fechado – Ganhou".');
+    private static void emailNotification(List<Id> oppId) {
+        List<Opportunity> oppList = [SELECT Id, Name, Amount, Owner.Email FROM Opportunity WHERE Id IN :oppId];
+        List<Messaging.SingleEmailMessage> emails = new List<Messaging.SingleEmailMessage>();
 
-                Messaging.sendEmail(new Messaging.SingleEmailMessage[]{email});
+        if (!oppList.isEmpty()) {
+            for (Opportunity opp : oppList) {
+                if (opp.Owner.Email != null) {
+                    Messaging.SingleEmailMessage email = new Messaging.SingleEmailMessage();
+                    email.setToAddresses(new String[]{opp.Owner.Email});
+                    email.setSubject('Oportunidade ' + opp.Name + ' Fechada com Sucesso!');
+                    email.setPlainTextBody('A oportunidade "' + opp.Name + '" atingiu um valor de ' + opp.Amount + 
+                                           ' e foi marcada como "Fechado – Ganhou".');
+                    emails.add(email);
+                }
             }
+        }
+        if(!emails.isEmpty()){
+            Messaging.sendEmail(emails);
         }
     }
 }
