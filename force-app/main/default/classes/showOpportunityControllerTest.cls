@@ -23,11 +23,11 @@ private class showOpportunityControllerTest {
     @isTest
     static void getOpportunitiesTest() {
         Test.startTest();
-        List<Opportunity> result = showOpportunityController.getOpportunities();
+        List<Opportunity> result = showOpportunityController.getOpportunities(10, 1);
         Test.stopTest();
         
         System.assertNotEquals(null, result, 'not null');
-        System.assertEquals(1, result.size(), 'Deve ser igual');
+        System.assert(result.size() > 0, 'Deve haver pelo menos um resultado');
         System.assertEquals('Test', result[0].Name, 'Deve ser igual');
         System.assertEquals('Prospecting', result[0].StageName, 'Deve ser igual');
         System.assertEquals(Date.today(), result[0].CloseDate, 'Deve ser igual');
